@@ -11,7 +11,8 @@ import io.ktor.server.netty.Netty
 import java.net.URL
 
 fun main(args: Array<String>) {
-    val server = embeddedServer(Netty, port = 8080) {
+    val port = Integer.valueOf(System.getenv("PORT"))
+    val server = embeddedServer(Netty, port = port) {
         routing {
             post("/demo") {
                 val event = call.receive<PushEvent>()

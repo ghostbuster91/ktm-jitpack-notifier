@@ -21,6 +21,7 @@ apply plugin: 'application'
 mainClassName = 'MainKt'
 
 sourceCompatibility = 1.8
+
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
@@ -42,4 +43,8 @@ dependencies {
     compile "io.ktor:ktor-server-netty:$ktor_version"
     compile "ch.qos.logback:logback-classic:1.2.3"
     testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+configurations { 
+    jar.archiveName = 'ktm-jitpack-notifier.jar'
 }

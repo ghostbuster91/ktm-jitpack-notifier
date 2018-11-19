@@ -1,0 +1,5 @@
+{
+  "name": "ktm jitpack notifier",
+  "description": "TBD",
+  "image": "heroku/java"
+}
