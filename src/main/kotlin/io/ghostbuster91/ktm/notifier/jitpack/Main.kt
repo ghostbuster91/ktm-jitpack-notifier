@@ -20,8 +20,6 @@ import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.netty.EngineMain
 import okhttp3.logging.HttpLoggingInterceptor
-import java.util.regex.Matcher
-import java.util.regex.Pattern
 
 @Suppress("UNUSED")
 fun Application.module() {
@@ -30,6 +28,7 @@ fun Application.module() {
             defaultCharset = Charsets.UTF_8
         }
         engine {
+            followRedirects = true
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.HEADERS })
         }
         defaultRequest {
