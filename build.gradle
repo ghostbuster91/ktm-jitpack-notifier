@@ -45,6 +45,9 @@ dependencies {
     compile "io.ktor:ktor-client-core:$ktor_version"
     compile "io.ktor:ktor-client-core-jvm:$ktor_version"
     compile "io.ktor:ktor-client-okhttp:$ktor_version"
+    compile "com.squareup.okhttp3:okhttp:3.11.0"
+    compile 'com.squareup.okhttp3:logging-interceptor:3.11.0'
+
 
     compile "io.ktor:ktor-client-gson:$ktor_version"
     compile "io.ktor:ktor-jackson:$ktor_version"
@@ -52,7 +55,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-configurations { 
+configurations {
     jar.archiveName = 'ktm-jitpack-notifier.jar'
 }
 
