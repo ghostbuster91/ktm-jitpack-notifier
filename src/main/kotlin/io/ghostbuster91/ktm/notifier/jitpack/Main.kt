@@ -1,5 +1,6 @@
 package io.ghostbuster91.ktm.notifier.jitpack
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -19,6 +20,8 @@ import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.netty.EngineMain
 import okhttp3.logging.HttpLoggingInterceptor
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 @Suppress("UNUSED")
 fun Application.module() {
@@ -41,10 +44,20 @@ fun Application.module() {
     routing {
         post("/demo") {
             val event = call.receive<Map<String, Any>>()
-            println(event)
+            println(ObjectMapper().writeValueAsString(event))
+
+            val refTagRegex = "refs/tags/(.+)".toRegex()
+            val isRelease = (event["ref"] as? String)?.matches(refTagRegex) ?: false
             val repository = event["repository"] as Map<String, Any>?
             if (repository != null) {
-                client.get<String>("https://jitpack.io/com/github/${repository["full_name"]}/${event["after"]}")
+                val version = if (isRelease) {
+                    val matcher = refTagRegex.find((event["ref"] as String))
+                    val version = matcher!!.groups[1]
+                    version
+                } else {
+                    event["after"]
+                }
+                client.get<String>("https://jitpack.io/com/github/${repository["full_name"]}/$version")
                 call.respond(HttpStatusCode.Created)
             }
             call.respond(HttpStatusCode.OK)
