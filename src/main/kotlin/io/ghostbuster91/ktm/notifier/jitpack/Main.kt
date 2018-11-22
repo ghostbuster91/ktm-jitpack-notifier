@@ -19,26 +19,32 @@ import io.ktor.response.respond
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.netty.EngineMain
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import okhttp3.logging.HttpLoggingInterceptor
+
+typealias JSON = Map<String,Any?>
+val inbox = Channel<JSON>(capacity = Channel.UNLIMITED)
+
+val client = HttpClient(OkHttp) {
+    install(HttpPlainText) {
+        defaultCharset = Charsets.UTF_8
+    }
+    engine {
+        followRedirects = true
+        addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.HEADERS })
+        config {
+            followRedirects(true)
+        }
+    }
+    defaultRequest {
+        header("user-agent", MOZILLA_USER_AGENT)
+    }
+}
 
 @Suppress("UNUSED")
 fun Application.module() {
-    val client = HttpClient(OkHttp) {
-        install(HttpPlainText) {
-            defaultCharset = Charsets.UTF_8
-        }
-        engine {
-            followRedirects = true
-            addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.HEADERS })
-            config {
-                followRedirects(true)
-            }
-        }
-        defaultRequest {
-            header("user-agent", MOZILLA_USER_AGENT)
-        }
-    }
     install(ContentNegotiation) {
         jackson {
             enable(SerializationFeature.INDENT_OUTPUT)
@@ -48,27 +54,37 @@ fun Application.module() {
         post("/demo") {
             val event = call.receive<Map<String, Any>>()
             println(ObjectMapper().writeValueAsString(event))
-            delay(5000)
-            val refTagRegex = "refs/tags/(.+)".toRegex()
-            val isRelease = (event["ref"] as? String)?.matches(refTagRegex) ?: false
-            val repository = event["repository"] as Map<String, Any>?
-            if (repository != null) {
-                val version = if (isRelease) {
-                    val matcher = refTagRegex.find((event["ref"] as String))
-                    val version = matcher!!.groups[1]!!.value
-                    version
-                } else {
-                    event["after"]
-                }
-                client.get<String>("https://jitpack.io/com/github/${repository["full_name"]}/$version")
-                call.respond(HttpStatusCode.Created)
-            }
+            println("Sending to inbox...")
+            inbox.send(event)
             call.respond(HttpStatusCode.OK)
         }
     }
 }
 
 
-fun main(args: Array<String>) = EngineMain.main(args)
+fun main(args: Array<String>) {
+    EngineMain.main(args)
+    runBlocking {
+        for (msg in inbox){
+            println("Received a message")
+            println("Waiting 20 seconds...")
+            delay(20_000)
+            val refTagRegex = "refs/tags/(.+)".toRegex()
+            val isRelease = (msg["ref"] as? String)?.matches(refTagRegex) ?: false
+            val repository = msg["repository"] as JSON?
+            if (repository != null) {
+                println("Processing repository: $repository")
+                val version = if (isRelease) {
+                    val matcher = refTagRegex.find((msg["ref"] as String))
+                    val version = matcher!!.groups[1]!!.value
+                    version
+                } else {
+                    msg["after"]
+                }
+                client.get<String>("https://jitpack.io/com/github/${repository["full_name"]}/$version")
+            }
+        }
+    }
+}
 
 val MOZILLA_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36"
