@@ -53,7 +53,7 @@ fun Application.module() {
         }
     }
     routing {
-        post("/demo") {
+        post("/webhook") {
             val event = call.receive<Map<String, Any>>()
             println(ObjectMapper().writeValueAsString(event))
             println("Sending to inbox...")
