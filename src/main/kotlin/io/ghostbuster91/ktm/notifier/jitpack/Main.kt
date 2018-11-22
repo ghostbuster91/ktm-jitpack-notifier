@@ -39,7 +39,7 @@ val client = HttpClient(OkHttp) {
         }
     }
     defaultRequest {
-        header("user-agent", MOZILLA_USER_AGENT)
+        header("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36")
     }
 }
 
@@ -87,4 +87,3 @@ fun main(args: Array<String>) {
     }
 }
 
-val MOZILLA_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36"
