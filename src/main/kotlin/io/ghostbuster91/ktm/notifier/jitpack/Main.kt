@@ -23,6 +23,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import okhttp3.logging.HttpLoggingInterceptor
+import java.util.concurrent.TimeUnit
 
 typealias JSON = Map<String,Any?>
 val inbox = Channel<JSON>(capacity = Channel.UNLIMITED)
@@ -36,6 +37,7 @@ val client = HttpClient(OkHttp) {
         addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.HEADERS })
         config {
             followRedirects(true)
+            readTimeout(5, TimeUnit.MINUTES)
         }
     }
     defaultRequest {
