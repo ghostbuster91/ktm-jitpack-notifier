@@ -30,6 +30,9 @@ fun Application.module() {
         engine {
             followRedirects = true
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.HEADERS })
+            config {
+                followRedirects(true)
+            }
         }
         defaultRequest {
             header("user-agent", MOZILLA_USER_AGENT)
