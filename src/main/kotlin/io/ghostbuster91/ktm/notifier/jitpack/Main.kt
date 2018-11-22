@@ -19,6 +19,7 @@ import io.ktor.response.respond
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.netty.EngineMain
+import kotlinx.coroutines.delay
 import okhttp3.logging.HttpLoggingInterceptor
 
 @Suppress("UNUSED")
@@ -47,7 +48,7 @@ fun Application.module() {
         post("/demo") {
             val event = call.receive<Map<String, Any>>()
             println(ObjectMapper().writeValueAsString(event))
-
+            delay(5000)
             val refTagRegex = "refs/tags/(.+)".toRegex()
             val isRelease = (event["ref"] as? String)?.matches(refTagRegex) ?: false
             val repository = event["repository"] as Map<String, Any>?
