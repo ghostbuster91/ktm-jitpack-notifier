@@ -11,4 +11,6 @@ To do this go to settings->webhooks->add webhook and paste following url:
 
 `https://morning-springs-55143.herokuapp.com/webhook`
 
+and change the content-type to `application/json`
+
 From now on whenever you push a new commit or new tag ktm-jitpack-notifier will get a hook from github and will requst jitpack to build a new artifact.
