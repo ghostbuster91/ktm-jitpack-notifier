@@ -1,6 +1,5 @@
 package io.ghostbuster91.ktm.notifier.jitpack
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -25,7 +24,8 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 
-typealias JSON = Map<String,Any?>
+typealias JSON = Map<String, Any?>
+
 val inbox = Channel<JSON>(capacity = Channel.UNLIMITED)
 
 val client = HttpClient(OkHttp) {
@@ -66,7 +66,7 @@ fun Application.module() {
 fun main(args: Array<String>) {
     EngineMain.main(args)
     runBlocking {
-        for (msg in inbox){
+        for (msg in inbox) {
             println("Received a message")
             println("Waiting 20 seconds...")
             delay(20_000)
@@ -75,7 +75,6 @@ fun main(args: Array<String>) {
             val repository = msg["repository"] as JSON?
             if (repository != null) {
                 val repositoryName = repository["full_name"]
-                println("Processing repository: $repositoryName")
                 val version = if (isRelease) {
                     val matcher = refTagRegex.find((msg["ref"] as String))
                     val version = matcher!!.groups[1]!!.value
@@ -83,7 +82,15 @@ fun main(args: Array<String>) {
                 } else {
                     msg["after"]
                 }
-                client.get<String>("https://jitpack.io/com/github/$repositoryName/$version")
+                println("Processing repository: $repositoryName:$version")
+                try {
+                    client.get<String>("https://jitpack.io/com/github/$repositoryName/$version")
+                } catch (ex: Exception) {
+                    println(ex.message)
+                    ex.printStackTrace()
+                } finally {
+                    println("Done $repositoryName:$version")
+                }
             }
         }
     }
