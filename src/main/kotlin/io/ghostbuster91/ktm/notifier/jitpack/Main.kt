@@ -55,7 +55,6 @@ fun Application.module() {
     routing {
         post("/webhook") {
             val event = call.receive<Map<String, Any>>()
-            println(ObjectMapper().writeValueAsString(event))
             println("Sending to inbox...")
             inbox.send(event)
             call.respond(HttpStatusCode.OK)
@@ -75,7 +74,8 @@ fun main(args: Array<String>) {
             val isRelease = (msg["ref"] as? String)?.matches(refTagRegex) ?: false
             val repository = msg["repository"] as JSON?
             if (repository != null) {
-                println("Processing repository: $repository")
+                val repositoryName = repository["full_name"]
+                println("Processing repository: $repositoryName")
                 val version = if (isRelease) {
                     val matcher = refTagRegex.find((msg["ref"] as String))
                     val version = matcher!!.groups[1]!!.value
@@ -83,7 +83,7 @@ fun main(args: Array<String>) {
                 } else {
                     msg["after"]
                 }
-                client.get<String>("https://jitpack.io/com/github/${repository["full_name"]}/$version")
+                client.get<String>("https://jitpack.io/com/github/$repositoryName/$version")
             }
         }
     }
