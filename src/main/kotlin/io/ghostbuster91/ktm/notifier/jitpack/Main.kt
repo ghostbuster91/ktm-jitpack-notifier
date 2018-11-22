@@ -52,7 +52,7 @@ fun Application.module() {
             if (repository != null) {
                 val version = if (isRelease) {
                     val matcher = refTagRegex.find((event["ref"] as String))
-                    val version = matcher!!.groups[1]
+                    val version = matcher!!.groups[1]!!.value
                     version
                 } else {
                     event["after"]
